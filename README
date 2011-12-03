@@ -1,10 +1,10 @@
 # learning_clojure
 
-FIXME: write description
+I'm just playing with various language features, trying to get a feel for the language.
 
 ## Usage
 
-FIXME: write
+lein run -m learning_clojure.core/main
 
 ## License
 
