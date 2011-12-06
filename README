@@ -4,7 +4,7 @@ I'm just playing with various language features, trying to get a feel for the la
 
 ## Usage
 
-lein run -m learning_clojure.core/main
+lein test
 
 ## License
 
