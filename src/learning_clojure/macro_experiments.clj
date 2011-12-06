@@ -1,8 +1,5 @@
-(ns learning_clojure.zanzibar
-  "foo")
-
-(def zanzvar 42)
-
+(ns learning_clojure.macro_experiments
+  "Fun with macros")
 
 ;could be implemented with a function..
 (defmacro 
@@ -26,15 +23,18 @@
      ;(println (type (first to_eval#)))
      (eval to_eval#)))
 
-(defmacro eval_if_simple [expr]
+(defmacro 
+  eval_if_simple 
+  "evaluate the code if it has one function call, else return code"
+  [expr]
   (let [filtered (filter list? expr)
         numlists (count filtered)]
     (if
       (= numlists 0)
-      `(eval ~expr)
+      `~expr
       `'~expr)))
 (defmacro eval_simple_bad [expr]
-  "this is just an experiment"
+  "this is just an experiment.  the other one is better"
   `(let [filtered# (filter list? '~expr)
          numlists# (count filtered#)]
      (if
@@ -43,3 +43,6 @@
        nil)))
 
 
+(defn square [x] 
+  (let [rslt (* x x)]
+    (list rslt)))

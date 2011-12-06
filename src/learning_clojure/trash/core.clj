@@ -7,6 +7,7 @@
             [clojure.contrib.seq-utils :as seq-utils]
             [clojure.contrib.math :as math]
             )
+  (:import (java.util.concurrent Executors))
   )
 (defn print_output [f arg]
   (println (f arg)))
@@ -72,6 +73,7 @@
                     :word_limit 3})
   (def book_set (rand_books 10000 book_params))
   (println (pick_random book_set))
+  (println (tax (pick_random book_set) 0.11))
 
   (z/my_apply_twice square (+ 2 2))
   (def incr (fn [x] (+ x 1)))
@@ -82,6 +84,18 @@
   (println (z/my_apply + (list 1 2 3 4)))
   (println (z/eval_if_simple (+ 1 2)))
   (println (z/eval_if_simple (+ 1 (* 2 3))))
+  (derive Book ::store_item)
+  (println (isa? Book ::store_item))
+
+  (def ml (map ref (range 0 8)))
+  (dosync
+    (doseq [cur_ref ml]
+      (alter cur_ref (fn [elt]
+                 (/ 2 (inc elt))))))
+  (println ml)
+
+
+
 ;  (learning_clojure.zanzibar/my_apply_twice square 2)
   
 )
