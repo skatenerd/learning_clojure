@@ -17,6 +17,9 @@
 (findmethods java.awt.Frame (re-pattern "[vV]is"))
 (def hgt 800)
 (def wdth 800)
+(def rad 50)
+(def y-speed-decay 0.95)
+(def x-speed-decay 1.0)
 (def frame (java.awt.Frame.))
 (doto frame
   (.setVisible true)
@@ -25,40 +28,82 @@
 (doto gfx
   (.setColor (java.awt.Color. 255 128 0))
   )
-(comment
-(defn draw-ball [posn]
-  (if (< posn 300)
-  (send-off *agent* #'draw-ball))
-  (doto gfx
-    (.clearRect 0 0 wdth hgt)
-    (.fillOval posn 150 50 50))
-  (. Thread (sleep 200))
-  (+ 30 posn))
-  )
-
-
 (def starting-posns
-  (for [y (range 0 (int (/ hgt 2)) 150)]
+  (for [y (range 0 (int (/ hgt 2)) (* 3 rad))]
     [0 y]))
-(def ball-agents (map agent starting-posns))
+
+
+(defstruct Ball :x :y :velocity)
+(defstruct Velocity :delta-x :delta-y)
+
+(def balls
+  (for [[x y] starting-posns]
+    (struct Ball x y (struct Velocity 20 20))))
+(def ball-agents (map agent balls))
+
 (def worldstate (vec ball-agents))
-(println worldstate)
-(def drawagent (agent 0))
+(def draw-agent (agent nil))
+(defn probably-one []
+  (let [threshold 0.95
+        cur-rand (rand)]
+    (if (> cur-rand threshold)
+      -1
+      1)))
+
 (defn draw-world [_]
   (send-off *agent* #'draw-world)
-  (doto gfx
-    (.clearRect 0 0 wdth hgt))
+  (. Thread (sleep 800))
+;  (doto gfx
+;    (.clearRect 0 0 wdth hgt))
   (doseq [curball worldstate]
-    (let [[x y] @curball]
-      (.fillOval gfx x y 50 50)))
-  (. Thread (sleep 200))
+    (.fillOval gfx (:x @curball) (:y @curball) rad rad))
   nil)
-(defn traverse [[x y]]
-  (if (< x wdth)
-  (send-off *agent* #'traverse))
-  (. Thread (sleep 200))
-  [(+ x 50) (+ y (* 80 (math/sin (* 6.28 (/ x 360)))))])
 
-(send-off drawagent draw-world)
-(doseq [cur-ball ball-agents]
+(comment
+(defn euclidean-distance [p1 p2]
+  (let [differences (map - p1 p2)
+        sqr-differences (map math/sqr differences)
+        sum-differences (reduce + sqr-differences)
+        ]
+    (math/sqrt sum-differences)
+    )
+  )
+(defn speed [v]
+  (let [zero-vector (for [component v]
+                      0)]
+    (euclidean-distance v zero-vector)))
+
+(defn balls-collide? [frst sec]
+  (< (euclidean-distance [(:x frst) (:y frst)]
+                         [(:x sec) (:y sec)])
+     (* 2 rad)))
+
+(defn dot-product [frst sec] 
+  (reduce + (map * frst sec)))
+
+(defn perp [[x-comp y-comp]]
+  [(* -1 y-comp) x-comp])
+
+)
+(defn traverse [ball]
+  (if (< (:x ball) wdth)
+      (send-off *agent* #'traverse))
+  (. Thread (sleep 500))
+  (let [
+        old-x (:x ball)
+        old-y (:y ball)
+        velocity (:velocity ball)
+        x-increment (:delta-x velocity)
+        y-increment (:delta-y velocity)
+        new-x (+ old-x x-increment)
+        two-pi (. Math PI)
+        new-y (+ old-y y-increment)
+        new-x-increment (* x-speed-decay x-increment (probably-one))
+        new-y-increment (* y-speed-decay y-increment (probably-one))
+        new-velocity (struct Velocity new-x-increment new-y-increment)
+        ]
+  (struct Ball new-x new-y new-velocity)))
+
+(send-off draw-agent draw-world)
+(doseq [cur-ball worldstate]
   (send-off cur-ball traverse))
