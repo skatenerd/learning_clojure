@@ -22,7 +22,16 @@
                  rest_elems))))))
                       
 
-
+(defn findmethods [class-to-inspect pattern]
+  (let [
+        methodsobj (.getMethods class-to-inspect)
+        methodsseq (seq methodsobj)
+        ]
+    (for [m methodsseq
+          :let [m-name (.getName m)]
+          :when (re-find pattern m-name)
+          ]
+      m-name)))
 
 ;(defn flattenonce [nonflat]
   ;(loop [rtnval '()
@@ -40,14 +49,6 @@
   (def l '(1 (2 (3 (4 (5) 6) 7) 8) 9 10))
   (println l)
   (println (my_flatten l))
-  (comment
-
-  (def ml (map ref (range 0 8)))
-  (dosync
-    (doseq [cur_ref ml]
-      (alter cur_ref (fn [elt]
-                 (/ 2 (inc elt))))))
-  (println ml)
-  )
+  (println (findmethods java.awt.Frame (re-pattern "[vV]is")))
 )
 (main)
