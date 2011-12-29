@@ -18,14 +18,15 @@
 
 (defn draw-world [_]
   (send-off *agent* #'draw-world)
-  (. Thread (sleep 800))
-;  (doto gfx
-;    (.clearRect 0 0 wdth hgt))
+  (. Thread (sleep 400))
+  (doto gfx
+    (.clearRect 0 0 wdth hgt))
   (doseq [curball ball/worldstate]
-    (.fillOval gfx (:x @curball) (:y @curball) ball/rad ball/rad))
+    (let [[cur-x cur-y] (:posn @curball)]
+      (.fillOval gfx cur-x cur-y ball/rad ball/rad)))
   nil)
 
 
-(send-off draw-agent draw-world)
 (ball/initialize wdth hgt)
+(send-off draw-agent draw-world)
 (ball/start-moving)
