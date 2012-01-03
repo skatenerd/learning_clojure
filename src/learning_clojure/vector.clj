@@ -1,5 +1,6 @@
 (ns learning_clojure.vector
-  "vector manipulation library"
+  "vector manipulation library.
+  some ideas taken from mark reid's minilight in clojure"
   (:require [clojure.contrib.generic.math-functions :as math])
   )
 
